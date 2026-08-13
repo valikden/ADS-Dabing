@@ -1,39 +1,39 @@
 (function () {
     'use strict';
 
-    function addAdsDabingSetting() {
-        // Чекаємо, поки додаток Lampa повністю завантажиться
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type === 'ready') {
+    function init() {
+        // Чекаємо відкриття меню налаштувань
+        Lampa.Settings.listener.follow('open', function (e) {
+            if (e.name === 'main') { // Головна сторінка налаштувань
                 
-                // Додаємо новий пункт у компонент налаштувань (Settings)
-                Lampa.Settings.listener.follow('open', function (e) {
-                    if (e.name === 'main') { // Головне меню налаштувань
-                        
-                        // Створюємо елемент кнопки/рядка
-                        var item = $(`
-                            <div class="settings-param selector" data-type="button">
-                                <div class="settings-param__name">ADS-Dabing</div>
-                                <div class="settings-param__value">Увімкнено</div>
-                            </div>
-                        `);
+                // Перевіряємо, щоб не додати дублікат при повторному відкритті
+                if (e.body.find('.ads-dabing-item').length === 0) {
+                    
+                    var item = $(`
+                        <div class="settings-param selector ads-dabing-item" data-type="button">
+                            <div class="settings-param__name">ADS-Dabing</div>
+                            <div class="settings-param__value">Увімкнено</div>
+                        </div>
+                    `);
 
-                        // Додаємо обробник кліку на цей рядок
-                        item.on('hover:enter', function () {
-                            Lampa.Noty.show('Ви натиснули на ADS-Dabing');
-                        });
+                    // Реакція на натискання
+                    item.on('hover:enter', function () {
+                        Lampa.Noty.show('Ви натиснули на ADS-Dabing');
+                    });
 
-                        // Вставляємо новий рядок у кінець списку налаштувань
-                        e.body.find('.settings-param').last().after(item);
-                    }
-                });
-
+                    // Вставляємо в кінець списку налаштувань
+                    e.body.find('.settings-param').last().after(item);
+                }
             }
         });
     }
 
-    // Запуск плагіна
-    if (window.Lampa) {
-        addAdsDabingSetting();
+    // Якщо Lampa вже завантажена — запускаємо одразу, якщо ні — чекаємо готовності
+    if (window.Lampa && Lampa.Settings) {
+        init();
+    } else {
+        Lampa.Listener.follow('app', function (e) {
+            if (e.type === 'ready') init();
+        });
     }
 })();
